@@ -42,7 +42,7 @@ export default function ForgetPassword() {
               </p>
               <p>
                 <Link
-                  to="/forgot-password"
+                  to="/sign-in"
                   className="text-blue-600 hover:text-blue-700 transition duration-200 ease-in-out "
                 >
                   sign in instead?

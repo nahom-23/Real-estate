@@ -2,8 +2,14 @@ import React, { useState } from "react";
 import { IoIosEye, IoMdEyeOff } from "react-icons/io";
 import { Link } from "react-router-dom";
 import OAuth from "../components/OAuth";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import db from "../firebase";
+import { serverTimestamp, doc, setDoc } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 export default function Signup() {
+  const navigate = useNavigate();
   const [showPassword, setshowPassword] = useState(true);
   const [formData, setFormData] = useState({
     name: "",
@@ -18,6 +24,27 @@ export default function Signup() {
   function toggleShowPassword() {
     setshowPassword(!showPassword);
   }
+  const onSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const auth = getAuth();
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+      const formDataCopy = { ...formData };
+      delete formDataCopy.password;
+      formDataCopy.timestamp = serverTimestamp();
+      await setDoc(doc(db, "users", user.uid), formDataCopy);
+
+      navigate("/");
+    } catch (error) {
+      toast.error("something went wrong with the registration");
+    }
+  };
   return (
     <section>
       <h1 className="text-3xl text-center mt-6 font-bold">Sign-Up</h1>
@@ -30,7 +57,7 @@ export default function Signup() {
           />
         </div>
         <div className="w-full md:w-[67%] lg:w-[40%] lg:ml-20">
-          <form>
+          <form onSubmit={onSubmit}>
             <input
               className="mb-6 w-full px-4 py-2 text-xl text-gray-700 border-gray-300 rounded transition ease-in-out"
               type="text"
@@ -73,7 +100,7 @@ export default function Signup() {
               <p className="mb-6">
                 Have an account?
                 <Link
-                  to="/sign-up"
+                  to="/sign-in"
                   className="text-red-600 hover:text-red-700 transition duration-200 ease-in-out ml-1"
                 >
                   Sign-in
